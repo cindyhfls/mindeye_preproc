@@ -61,9 +61,9 @@ Can easily run the next three commands in sequence with ```./run_fmriprep.sh 003
     - create data/bids/derivatives/masks/sub-003 if it doesn't exist
     - create data/design/csv if it doesn't exist
     - populate csv folder with the run-by-run csv files from GitHub
-        - for example: https://github.com/PrincetonCompMemLab/real_time_mindEye2/tree/paul/psychopy_task/conditions_files/participant3_run0_sess1.csv
+        - for example: [conditions files](https://github.com/PrincetonCompMemLab/mindeye_task/tree/main/psychopy_task/conditions_files)
     - also populate csv folder with design file from GitHub
-        - for example: https://github.com/PrincetonCompMemLab/real_time_mindEye2/blob/paul/psychopy_task/data/3_1_rtmindeye_2024-12-13_14h18.09.698.csv
+        - for example: [data file](https://github.com/PrincetonCompMemLab/mindeye_task/blob/main/psychopy_task/data/3_1_rtmindeye_2024-12-13_14h18.09.698.csv)
     - rename the design file from 3_1_rtmindeye_2024-12-13_14h18.09.698.csv to sub-003_ses-01.csv
 
 2. Rename the data folder e.g. data_sub-003_ses-01
