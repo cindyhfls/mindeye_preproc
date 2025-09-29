@@ -6,6 +6,10 @@ import subprocess
 import time
 from datetime import datetime
 
+# Helper to parse boolean flags that can be provided as true/false strings
+def str2bool(v):
+    return str(v).lower() in ("true", "1", "yes", "y")
+
 def run_glmsingle(data_dir, glmsingle_dir):
     """
     Run GLMsingle analysis with proper directory and logging setup
@@ -94,8 +98,20 @@ if __name__ == "__main__":
     parser.add_argument("sub", type=str, help="Subject ID (e.g., 'sub-001')")
     parser.add_argument("session", type=str, help="Session ID (e.g., 'ses-01' (single-session), 'all' (multi-session))")
     parser.add_argument("func_task_name", type=str, help="Functional task name (e.g., 'study')")
-    parser.add_argument("--resample_voxel_size", action='store_true', default=False, help="Resample voxel size flag (True/False)")
-    parser.add_argument("--run_resample_voxel", action='store_true', default=True, help="Whether to perform resampling (default: True). If False, assumes resampled data has been previously computed and loads it in. If True but resample_voxel_size is False, has no effect.")
+    parser.add_argument(
+        "--resample_voxel_size",
+        type=str2bool,
+        nargs="?",
+        const=True,    # --resample_voxel_size with no value => True
+        default=False, # omit flag => False
+        help="Resample voxel size flag (True/False). Examples: --resample_voxel_size true | --resample_voxel_size false"
+    )
+    parser.add_argument(
+        "--run_resample_voxel",
+        action='store_true',
+        default=False,
+        help="Whether to perform resampling (default: False). If False, assumes resampled data has been previously computed and loads it in. If True but resample_voxel_size is False, has no effect."
+    )
     parser.add_argument("--resampled_vox_size", type=float, help="Voxel size (mm isotropic) to resample to (e.g., 2.5)")
     parser.add_argument("--resample_method", type=str, help="Resampling method (e.g., 'trilinear')")
     parser.add_argument("--ses_list", type=str, help="Comma-separated list of session IDs (e.g. ses-01,ses-02).")
@@ -113,7 +129,13 @@ if __name__ == "__main__":
         if args.dry_run:
             print(f"os.environ[{arg.upper()}] -> {str(value)}")
         else:
-            os.environ[arg.upper()] = str(value) if value is not None else ""
+            # Export booleans so the notebook's get_flag(..., cast=bool) is correct:
+            # - True  -> "True"  (non-empty -> True)
+            # - False -> ""      (empty -> False)
+            if isinstance(value, bool):
+                os.environ[arg.upper()] = "True" if value else ""
+            else:
+                os.environ[arg.upper()] = str(value) if value is not None else ""
     
     if not args.dry_run:
         run_glmsingle(args.data_dir, args.glmsingle_dir)

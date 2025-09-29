@@ -103,6 +103,9 @@ def create_design_matrix(images, starts, is_new_run, unique_images, n_runs, n_tr
     Returns:
         design: List of design matrices, one per run
     """
+    print(f"Creating design matrix with n_runs={n_runs}, n_trs={n_trs}, len_unique_images={len_unique_images}")
+    print(f"Total trials: {len(images)}")
+    
     design = [np.zeros((n_trs, len_unique_images)) for _ in range(n_runs)]
     starting_time = starts[0]
     cur_run = 0
@@ -113,7 +116,11 @@ def create_design_matrix(images, starts, is_new_run, unique_images, n_runs, n_tr
             starting_time = starts[i]
             cur_run += 1
             first_trial_of_new_run = False
-            
+            # If we've processed all the expected runs, break out of the loop
+            if cur_run >= n_runs:
+                print(f"Warning: Runs in the design file exceed provided number of runs ({n_runs}). Skipping remaining runs.")
+                break
+
         if is_new_run[i] == 1: # is this the last trial of the run?
             first_trial_of_new_run = True
             if n_runs == 1:
@@ -121,10 +128,15 @@ def create_design_matrix(images, starts, is_new_run, unique_images, n_runs, n_tr
         
         if images[i] == "blank.jpg":
             continue
-    
+
         image_idx = np.where(str(images[i])==unique_images)[0].item()
         timepoint = int(np.round(starts[i] - starting_time))
         
+        # Add bounds checking for timepoint
+        if timepoint >= n_trs:
+            print(f"Warning: timepoint ({timepoint}) >= n_trs ({n_trs}). Skipping trial {i}")
+            continue
+            
         design[cur_run][timepoint, image_idx] = 1
             
     return design
@@ -325,7 +337,7 @@ def load_design_files(sub, session, func_task_name, designdir, design_ses_list=N
     elif (sub=='sub-001' and session in ('ses-02', 'ses-03', 'ses-04', 'ses-05')) or \
          (sub=='sub-002' and session in ('ses-02')) or sub=='sub-003' or \
          (sub=='sub-004' and session in ('ses-01', 'ses-02')) or \
-         (sub=='sub-005' and session in ('ses-01', 'ses-02', 'ses-03', 'ses-04')) or \
+         (sub=='sub-005' and session in ('ses-01', 'ses-02', 'ses-03', 'ses-04', 'ses-06')) or \
          (sub=='sub-006' and session in ('ses-01')) or \
          (sub=='sub-007' and session in ('ses-01')):
         
@@ -356,7 +368,7 @@ def load_design_files(sub, session, func_task_name, designdir, design_ses_list=N
             assert func_task_name == 'C'
             filename = f"{designdir}/csv/{sub}_ses-08.csv"
 
-        elif (sub=='sub-005' and session in ('ses-01', 'ses-02', 'ses-03')) or sub=='sub-006' and session in ('ses-01'):
+        elif (sub=='sub-005' and session in ('ses-01', 'ses-02', 'ses-03', 'ses-06')) or sub=='sub-006' and session in ('ses-01'):
             filename = f"{designdir}/csv/{sub}_{session}.csv"
 
         elif (sub=='sub-005' and session in ('ses-04')):
